@@ -1,0 +1,3 @@
+2024/07/10 06:51:11 [error] 170#170: *1 connect() failed (111: Connection refused) while connecting to upstream, client: 172.18.0.1, server: nginxproxymanager, request: "GET /api/ HTTP/1.1", upstream: "http://127.0.0.1:3000/", host: "localhost:8092", referrer: "http://localhost:8092/nginx/proxy"
+2024/07/10 07:25:02 [warn] 147#147: server name "http://hngdevops.mooo.com/" has suspicious symbols in /data/nginx/temp/letsencrypt_1.conf:10
+2024/07/10 07:25:58 [warn] 147#147: server name "hngdevops.mooo.com/" has suspicious symbols in /data/nginx/temp/letsencrypt_2.conf:10
