@@ -1,66 +1,60 @@
 version: '3.8'
 
 services:
-  backend:
-    env_file: './backend/.env'
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "5173:5173"
-    env_file: './frontend/.env'
-
-  nginx:
-    image: nginx:latest
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/letsencrypt:/etc/letsencrypt
+  nginx-proxy:
+    image: jc21/nginx-proxy-manager:latest
+    restart: always
     ports:
       - "80:80"
-    depends_on:
-      - frontend
-      - backend
-      - db
-      - adminer
-      - nginx-proxy-manager
-
-  nginx-proxy-manager:
-    image: 'jc21/nginx-proxy-manager:latest'
-    restart: unless-stopped
-    ports:
-      - '8092:81' # Admin Web Port
-
-    volumes:
-      - ./proxy/data:/data
-      - ./proxy/letsencrypt:/etc/letsencrypt
-
-
-  db:
-    image: postgres:16
+      - "8090:81"
+      - "443:443"
     environment:
-      POSTGRES_DB: hng11devops2
-      POSTGRES_USER: alexin
-      POSTGRES_PASSWORD: freakingtired
+      DB_SQLITE_FILE: "/data/database.sqlite"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+
+
+  postgres-db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: changethis123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+   
+
+  backend-container:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgres://app:changethis123@postgres-db:5432/app
+    depends_on:
+      - postgres-db
+    ports:
+      - "8000:8000"
+
+
+  frontend-container:
+    build: ./frontend
+    depends_on:
+      - backend-container
+    ports:
+      - "5173:5173"
+
 
   adminer:
     image: adminer
     restart: always
     ports:
-      - 8080:8080
+      - "8080:8080"
     environment:
-      ADMINER_DEFAULT_SERVER: db
+      ADMINER_DEFAULT_SERVER: postgres-db
+ 
 
 volumes:
-  db_data:
+  postgres_data:
+     driver: local
   
